@@ -3,10 +3,9 @@ class ArrayBoom extends Phaser.Scene {
         super("arrayBoom");
 
         // Initialize a class variable "my" which is an object.
-        // The object has two properties, both of which are objects
-        //  - "sprite" holds bindings (pointers) to created sprites
-        //  - "text"   holds bindings to created bitmap text objects
-        this.my = {sprite: {}, text: {}};
+        // The object has one property, "sprite" which is also an object.
+        // This will be used to hold bindings (pointers) to created sprites.
+        this.my = {sprite: {}};
 
         // Create a property inside "sprite" named "bullet".
         // The bullet property has a value which is an array.
@@ -20,9 +19,6 @@ class ArrayBoom extends Phaser.Scene {
 
         
         
-        this.myScore = 0;       // record a score as a class variable
-        // More typically want to use a global variable for score, since
-        // it will be used across multiple scenes
     }
 
     preload() {
@@ -238,6 +234,11 @@ class ArrayBoom extends Phaser.Scene {
             }
         }
 
+        // Make all of the bullets move
+        for (let bullet of my.sprite.bullet) {
+            bullet.y -= this.bulletSpeed;
+        }
+
         // Remove all of the bullets which are offscreen
         // filter() goes through all of the elements of the array, and
         // only returns those which **pass** the provided test (conditional)
@@ -280,11 +281,5 @@ class ArrayBoom extends Phaser.Scene {
         if (Math.abs(a.y - b.y) > (a.displayHeight/2 + b.displayHeight/2)) return false;
         return true;
     }
-
-    updateScore() {
-        let my = this.my;
-        my.text.score.setText("Score " + this.myScore);
-    }
-
 }
          
