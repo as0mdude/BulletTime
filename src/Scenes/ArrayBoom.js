@@ -12,43 +12,60 @@ class ArrayBoom extends Phaser.Scene {
         // This array will hold bindings (pointers) to bullet sprites
         this.my.sprite.bullet = [];   
         this.maxBullets = 10;           // Don't create more than this many bullets
+
+        
+
+        this.enemyKilled = 0;
+
+        
         
     }
 
     preload() {
         this.load.setPath("./assets/");
-        this.load.image("elephant", "elephant.png");
-        this.load.image("heart", "heart.png");
-        this.load.image("hippo", "hippo.png");
-        this.load.image("whitePuff00", "whitePuff00.png");
-        this.load.image("whitePuff01", "whitePuff01.png");
-        this.load.image("whitePuff02", "whitePuff02.png");
-        this.load.image("whitePuff03", "whitePuff03.png");
+        this.load.image("playerchr", "ship_0012.png");
+        this.load.image("bullet", "tile_0002.png");
+        this.load.image("enemy_bullet", "tile_0003.png");
+        this.load.image("enemy1", "ship_0001.png");
+
+        this.load.image("fire1", "fire1.png");
+        this.load.image("fire2", "fire2.png");
+        this.load.image("fire3", "fire3.png");
+        this.load.image("fire4", "fire4.png");
+        this.load.image("fire5", "fire5.png");
+
+        this.load.image("health", "health.png")
     }
 
     create() {
         let my = this.my;
 
-        my.sprite.elephant = this.add.sprite(game.config.width/2, game.config.height - 40, "elephant");
-        my.sprite.elephant.setScale(0.25);
+        my.text1 = this.add.text(650, 500, '0');
+        my.text1.setScale(5, 5);
+        
 
-        my.sprite.hippo = this.add.sprite(game.config.width/2, 40, "hippo");
-        my.sprite.hippo.setScale(0.25);
+        my.sprite.player = this.add.sprite(game.config.width/2, game.config.height - 40, "playerchr");
+        my.sprite.player.setScale(2);
+
+        my.sprite.enemy1 = this.add.sprite(game.config.width/2, 40, "enemy1");
+        my.sprite.enemy1.setScale(2);
+        my.sprite.enemy1.setAngle(180);
 
         // Notice that in this approach, we don't create any bullet sprites in create(),
-        // and instead wait until we need them, based on the number of space bar presses
+        // and instead wait until we need them, based on the number of space bar presseads
 
         // Create white puff animation
         this.anims.create({
             key: "puff",
             frames: [
-                { key: "whitePuff00" },
-                { key: "whitePuff01" },
-                { key: "whitePuff02" },
-                { key: "whitePuff03" },
+                { key: "fire1" },
+                { key: "fire2" },
+                { key: "fire3" },
+                { key: "fire4" },
+                { key: "fire5" },
             ],
             framerate: 30,
-            repeat: 5,
+            repeat: 1,
             hideOnComplete: true
         });
 
@@ -59,30 +76,151 @@ class ArrayBoom extends Phaser.Scene {
         this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         // Set movement speeds (in pixels/tick)
-        this.playerSpeed = 5;
-        this.bulletSpeed = 5;
+        this.playerSpeed = 10;
+        this.bulletSpeed = 20;
 
         // update HTML description
         document.getElementById('description').innerHTML = '<h2>Array Boom.js</h2><br>A: left // D: right // Space: fire/emit // S: Next Scene'
+
+        this.enemy1_heading = true;
+
+        my.sprite.enemybullet1 = this.add.sprite(-10, -10, "enemy_bullet");
+        my.sprite.enemybullet1.setAngle(180);
+        my.sprite.enemybullet1.setScale(2);
+        this.enemy1bulletSpeed = 10;
+        my.sprite.enemybullet1.visible = false;
+        this.enemy1_bulletActive = false;
+
+
+
+        my.sprite.healthicon1 = this.add.sprite(80, 550, "health");
+        my.sprite.healthicon1.setScale(3);
+        my.sprite.healthicon2 = this.add.sprite(120, 550, "health");
+        my.sprite.healthicon2.setScale(3);
+        my.sprite.healthicon3 = this.add.sprite(160, 550, "health");
+        my.sprite.healthicon3.setScale(3);
+        my.sprite.healthicon4 = this.add.sprite(200, 550, "health");
+        my.sprite.healthicon4.setScale(3);
+
+        this.playerHealth = 100;
 
     }
 
     update() {
         let my = this.my;
 
+
+        
+        if (this.collides(my.sprite.player, my.sprite.enemybullet1)) {
+            // Handle player-enemy bullet collision here
+            //this.enemyKilled++;
+            //my.text1.setText(this.enemyKilled);
+
+            this.playerHealth -= 25;
+            
+            // Reset the enemybullet1
+            my.sprite.enemybullet1.visible = false;
+            this.enemy1_bulletActive = false;
+
+            if(this.playerHealth == 0){
+                my.sprite.player.visible = false;
+                this.puff = this.add.sprite(my.sprite.player.x, my.sprite.player.y, "fire1").setScale(4).play("puff");
+
+            }
+
+        }
+
+        if(this.playerHealth==100){
+            my.sprite.healthicon4.visible = true;
+            my.sprite.healthicon3.visible = true;
+            my.sprite.healthicon2.visible = true;
+            my.sprite.healthicon1.visible = true;
+            
+
+        }else if(this.playerHealth==75){
+            my.sprite.healthicon4.visible = false;
+            my.sprite.healthicon3.visible = true;
+            my.sprite.healthicon2.visible = true;
+            my.sprite.healthicon1.visible = true;
+            
+
+        }else if(this.playerHealth==50){
+            my.sprite.healthicon4.visible = false;
+            my.sprite.healthicon3.visible = false;
+            my.sprite.healthicon2.visible = true;
+            my.sprite.healthicon1.visible = true;
+            
+
+        }else if(this.playerHealth==25){
+            my.sprite.healthicon4.visible = false;
+            my.sprite.healthicon3.visible = false;
+            my.sprite.healthicon2.visible = false;
+            my.sprite.healthicon1.visible = true;
+            
+
+        }else{
+            my.sprite.healthicon4.visible = false;
+            my.sprite.healthicon3.visible = false;
+            my.sprite.healthicon2.visible = false;
+            my.sprite.healthicon1.visible = false;            
+
+        }
+        
+
+        if (!this.enemy1_bulletActive) {
+            // Set the active flag to true
+            this.enemy1_bulletActive = true;
+            // Set the position of the bullet to be the location of the player
+            // Offset by the height of the sprite, so the "bullet" comes out of
+            // the top of the player avatar, not the middle.
+            my.sprite.enemybullet1.x = my.sprite.enemy1.x;
+            my.sprite.enemybullet1.y = my.sprite.enemy1.y - my.sprite.enemy1.displayHeight/2;
+            my.sprite.enemybullet1.visible = true;
+        }
+
+        if (this.enemy1_bulletActive) {
+            my.sprite.enemybullet1.y += this.enemy1bulletSpeed;
+            // Is the bullet off the top of the screen?
+            if (my.sprite.enemybullet1.y > 600) {
+                // make it inactive and invisible
+                this.enemy1_bulletActive = false;
+                my.sprite.enemybullet1.visible = false;
+
+            }
+        }
+
+
+        
+        if(my.sprite.enemy1.x >= 750){
+            my.sprite.enemy1.y+=65;
+            my.sprite.enemy1.x-=5;
+            this.enemy1_heading = false;
+        }else if(my.sprite.enemy1.x <= 50){
+            my.sprite.enemy1.y+=65;
+            my.sprite.enemy1.x+=5;
+            this.enemy1_heading = true;
+        }else if(this.enemy1_heading == true){
+            my.sprite.enemy1.x+=5;
+        }else if(this.enemy1_heading == false){
+            my.sprite.enemy1.x-=5;
+        }
+
+
+
+
         // Moving left
         if (this.left.isDown) {
             // Check to make sure the sprite can actually move left
-            if (my.sprite.elephant.x > (my.sprite.elephant.displayWidth/2)) {
-                my.sprite.elephant.x -= this.playerSpeed;
+            if (my.sprite.player.x > (my.sprite.player.displayWidth/2)) {
+                my.sprite.player.x -= this.playerSpeed;
             }
         }
 
         // Moving right
         if (this.right.isDown) {
             // Check to make sure the sprite can actually move right
-            if (my.sprite.elephant.x < (game.config.width - (my.sprite.elephant.displayWidth/2))) {
-                my.sprite.elephant.x += this.playerSpeed;
+            if (my.sprite.player.x < (game.config.width - (my.sprite.player.displayWidth/2))) {
+                my.sprite.player.x += this.playerSpeed;
             }
         }
 
@@ -91,7 +229,7 @@ class ArrayBoom extends Phaser.Scene {
             // Are we under our bullet quota?
             if (my.sprite.bullet.length < this.maxBullets) {
                 my.sprite.bullet.push(this.add.sprite(
-                    my.sprite.elephant.x, my.sprite.elephant.y-(my.sprite.elephant.displayHeight/2), "heart")
+                    my.sprite.player.x, my.sprite.player.y-(my.sprite.player.displayHeight/2), "bullet")
                 );
             }
         }
@@ -115,24 +253,24 @@ class ArrayBoom extends Phaser.Scene {
 
         // Check for collision with the hippo
         for (let bullet of my.sprite.bullet) {
-            if (this.collides(my.sprite.hippo, bullet)) {
+            if (this.collides(my.sprite.enemy1, bullet)) {
                 // start animation
-                this.puff = this.add.sprite(my.sprite.hippo.x, my.sprite.hippo.y, "whitePuff03").setScale(0.25).play("puff");
+                this.puff = this.add.sprite(my.sprite.enemy1.x, my.sprite.enemy1.y, "fire1").setScale(4).play("puff");
                 // clear out bullet -- put y offscreen, will get reaped next update
                 bullet.y = -100;
-                my.sprite.hippo.visible = false;
-                my.sprite.hippo.x = -100;
+                my.sprite.enemy1.visible = false;
+                my.sprite.enemy1.x = -100;
+                this.enemyKilled = this.enemyKilled+=2;
+                my.text1.setText(this.enemyKilled);
                 this.puff.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                    this.my.sprite.hippo.visible = true;
-                    this.my.sprite.hippo.x = Math.random()*config.width;
+                    this.my.sprite.enemy1.visible = true;
+                    this.my.sprite.enemy1.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
+                    this.my.sprite.enemy1.y= 40;
+                    this.enemy1_heading = true;
+                    
                 }, this);
 
             }
-        }
-
-
-        if (Phaser.Input.Keyboard.JustDown(this.nextScene)) {
-            this.scene.start("fixedArrayBullet");
         }
 
     }
