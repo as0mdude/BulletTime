@@ -15,7 +15,7 @@ class ArrayBoom extends Phaser.Scene {
 
         
 
-        this.enemyKilled = 0;
+        this.playerScore = 0;
 
         
         
@@ -42,6 +42,11 @@ class ArrayBoom extends Phaser.Scene {
 
         my.text1 = this.add.text(650, 500, '0');
         my.text1.setScale(5, 5);
+
+        my.text2 = this.add.text(100, 100, 'YOU DIED - Press "R" to restart the level.');
+        my.text2.setColor("Red");
+        my.text2.setScale(1.5, 1.5);
+        my.text2.visible = false;
         
 
         my.sprite.player = this.add.sprite(game.config.width/2, game.config.height - 40, "playerchr");
@@ -54,7 +59,7 @@ class ArrayBoom extends Phaser.Scene {
         // Notice that in this approach, we don't create any bullet sprites in create(),
         // and instead wait until we need them, based on the number of space bar presseads
 
-        // Create white puff animation
+        // Create explosion animation
         this.anims.create({
             key: "puff",
             frames: [
@@ -74,13 +79,14 @@ class ArrayBoom extends Phaser.Scene {
         this.right = this.input.keyboard.addKey("D");
         this.nextScene = this.input.keyboard.addKey("S");
         this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.restart = this.input.keyboard.addKey("R");
 
         // Set movement speeds (in pixels/tick)
         this.playerSpeed = 10;
         this.bulletSpeed = 20;
 
         // update HTML description
-        document.getElementById('description').innerHTML = '<h2>Array Boom.js</h2><br>A: left // D: right // Space: fire/emit // S: Next Scene'
+        document.getElementById('description').innerHTML = '<h2>Array Boom.js</h2><br>A: left // D: right // Space: fire/emit'
 
         this.enemy1_heading = true;
 
@@ -104,12 +110,20 @@ class ArrayBoom extends Phaser.Scene {
 
         this.playerHealth = 100;
 
+        this.largestKey = 0;
+        
+        // to-do 
+        this.scoresArray = [];
+        // use this to store all the scores, this gets reset from the localStorage every time, pop from this.
+        this.highScoresArray = [];
+        // use this to store all the highscores, push into this.
+
     }
 
     update() {
         let my = this.my;
 
-
+        console.log(this.playerHealth);
         
         if (this.collides(my.sprite.player, my.sprite.enemybullet1)) {
             // Handle player-enemy bullet collision here
@@ -126,44 +140,48 @@ class ArrayBoom extends Phaser.Scene {
                 my.sprite.player.visible = false;
                 this.puff = this.add.sprite(my.sprite.player.x, my.sprite.player.y, "fire1").setScale(4).play("puff");
 
+                if (localStorage.getItem("myKey") != null) {
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        // Assuming your keys are numeric, you can convert them to integers
+                        // for comparison (if needed).
+                        const numericKey = parseInt(key, 10);
+                    
+                        if (this.largestKey === null || numericKey > this.largestKey) {
+                            this.largestKey = numericKey;
+                        }
+                    }
+                }
+                this.largestKey+=1
+                
+                localStorage.setItem(this.largestKey, this.playerScore);
+
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    console.log(`${key}: ${value}`);
+                }
+
+                this.my.text2.visible = true;
+                
+
             }
 
         }
 
-        if(this.playerHealth==100){
+        if(this.playerHealth>=100){
             my.sprite.healthicon4.visible = true;
             my.sprite.healthicon3.visible = true;
             my.sprite.healthicon2.visible = true;
             my.sprite.healthicon1.visible = true;
-            
-
-        }else if(this.playerHealth==75){
+        }else if(this.playerHealth>=75){
             my.sprite.healthicon4.visible = false;
-            my.sprite.healthicon3.visible = true;
-            my.sprite.healthicon2.visible = true;
-            my.sprite.healthicon1.visible = true;
-            
-
-        }else if(this.playerHealth==50){
-            my.sprite.healthicon4.visible = false;
+        }else if(this.playerHealth>=50){
             my.sprite.healthicon3.visible = false;
-            my.sprite.healthicon2.visible = true;
-            my.sprite.healthicon1.visible = true;
-            
-
-        }else if(this.playerHealth==25){
-            my.sprite.healthicon4.visible = false;
-            my.sprite.healthicon3.visible = false;
+        }else if(this.playerHealth>=25){
             my.sprite.healthicon2.visible = false;
-            my.sprite.healthicon1.visible = true;
-            
-
         }else{
-            my.sprite.healthicon4.visible = false;
-            my.sprite.healthicon3.visible = false;
-            my.sprite.healthicon2.visible = false;
             my.sprite.healthicon1.visible = false;            
-
         }
         
 
@@ -224,6 +242,40 @@ class ArrayBoom extends Phaser.Scene {
             }
         }
 
+        
+        if (Phaser.Input.Keyboard.JustDown(this.restart) && this.playerHealth <= 0) {
+
+
+                
+
+                
+
+
+            
+                my.text2.visible = false;
+                this.playerHealth = 100;
+                this.playerScore = 0;
+                my.text1.setText(this.playerScore);
+                this.my.sprite.enemy1.visible = true;
+                this.my.sprite.enemy1.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
+                this.my.sprite.enemy1.y= 40;
+                this.enemy1_heading = true;
+                
+
+                my.sprite.healthicon4.visible = true;   
+                my.sprite.healthicon3.visible = true;
+                my.sprite.healthicon2.visible = true;
+                my.sprite.healthicon1.visible = true;
+
+
+                my.sprite.player.x = game.config.width/2;
+                my.sprite.player.y = game.config.height - 40;
+                my.sprite.player.visible = true;
+                
+            
+            
+        }
+
         // Check for bullet being fired
         if (Phaser.Input.Keyboard.JustDown(this.space)) {
             // Are we under our bullet quota?
@@ -232,6 +284,8 @@ class ArrayBoom extends Phaser.Scene {
                     my.sprite.player.x, my.sprite.player.y-(my.sprite.player.displayHeight/2), "bullet")
                 );
             }
+
+            
         }
 
         // Make all of the bullets move
@@ -260,8 +314,8 @@ class ArrayBoom extends Phaser.Scene {
                 bullet.y = -100;
                 my.sprite.enemy1.visible = false;
                 my.sprite.enemy1.x = -100;
-                this.enemyKilled = this.enemyKilled+=2;
-                my.text1.setText(this.enemyKilled);
+                this.playerScore = this.playerScore+=2;
+                my.text1.setText(this.playerScore);
                 this.puff.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
                     this.my.sprite.enemy1.visible = true;
                     this.my.sprite.enemy1.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
@@ -272,8 +326,9 @@ class ArrayBoom extends Phaser.Scene {
 
             }
         }
-
     }
+
+    
 
     // A center-radius AABB collision check
     collides(a, b) {
@@ -282,4 +337,3 @@ class ArrayBoom extends Phaser.Scene {
         return true;
     }
 }
-         
