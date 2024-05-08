@@ -47,6 +47,8 @@ class ArrayBoom extends Phaser.Scene {
         my.text2.setColor("Red");
         my.text2.setScale(1.5, 1.5);
         my.text2.visible = false;
+
+        
         
 
         my.sprite.player = this.add.sprite(game.config.width/2, game.config.height - 40, "playerchr");
@@ -112,11 +114,7 @@ class ArrayBoom extends Phaser.Scene {
 
         this.largestKey = 0;
         
-        // to-do 
-        this.scoresArray = [];
-        // use this to store all the scores, this gets reset from the localStorage every time, pop from this.
-        this.highScoresArray = [];
-        // use this to store all the highscores, push into this.
+        
 
     }
 
@@ -139,28 +137,47 @@ class ArrayBoom extends Phaser.Scene {
             if(this.playerHealth == 0){
                 my.sprite.player.visible = false;
                 this.puff = this.add.sprite(my.sprite.player.x, my.sprite.player.y, "fire1").setScale(4).play("puff");
-
-                if (localStorage.getItem("myKey") != null) {
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        // Assuming your keys are numeric, you can convert them to integers
-                        // for comparison (if needed).
-                        const numericKey = parseInt(key, 10);
-                    
-                        if (this.largestKey === null || numericKey > this.largestKey) {
-                            this.largestKey = numericKey;
-                        }
-                    }
-                }
-                this.largestKey+=1
                 
-                localStorage.setItem(this.largestKey, this.playerScore);
 
+
+                    // Incrementing the key to store the next score
+                let key = localStorage.length + 1;
+                localStorage.setItem(key.toString(), this.playerScore);
+
+                // Retrieve and sort scores
+                let scoresArray = [];
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
-                    const value = localStorage.getItem(key);
-                    console.log(`${key}: ${value}`);
+                    const value = parseInt(localStorage.getItem(key), 10);
+                    scoresArray.push(value);
                 }
+                scoresArray.sort((a, b) => b - a);
+
+                // Save top 5 scores
+                const top5Scores = scoresArray.slice(0, 5);
+                localStorage.clear(); // Clearing all scores to save only top 5
+                for (let i = 0; i < top5Scores.length; i++) {
+                    localStorage.setItem((i + 1).toString(), top5Scores[i]);
+                }
+
+
+                console.log(top5Scores);
+
+                // Display top 5 scores
+                for (let i = 0; i < 5; i++) {
+                    const score = scoresArray[i];
+                    const text3 = this.add.text(100, 100 + i * 30, `Score ${i + 1}: ${score}`, { fontFamily: 'Arial', fontSize: 24, color: '#ffffff' });
+                    // Adjust the position and style of the text as needed
+                }
+
+                
+
+
+                
+
+
+
+
 
                 this.my.text2.visible = true;
                 
@@ -336,4 +353,6 @@ class ArrayBoom extends Phaser.Scene {
         if (Math.abs(a.y - b.y) > (a.displayHeight/2 + b.displayHeight/2)) return false;
         return true;
     }
+
+    
 }
