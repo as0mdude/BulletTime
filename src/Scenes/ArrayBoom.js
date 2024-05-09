@@ -27,6 +27,7 @@ class ArrayBoom extends Phaser.Scene {
         this.load.image("bullet", "tile_0002.png");
         this.load.image("enemy_bullet", "tile_0003.png");
         this.load.image("enemy1", "ship_0001.png");
+        this.load.image("enemy2", "ship_0000.png");
 
         this.load.image("fire1", "fire1.png");
         this.load.image("fire2", "fire2.png");
@@ -48,6 +49,41 @@ class ArrayBoom extends Phaser.Scene {
         my.text2.setScale(1.5, 1.5);
         my.text2.visible = false;
 
+
+        my.highscoreText = this.add.text(100, 130, 'Highscores:');
+        my.highscoreText.setColor("Red");
+        my.highscoreText.setScale(3, 3);
+
+        my.highscoreText.visible = false;
+
+
+        my.score1 = this.add.text(100, 200, "filler");
+        my.score1.setScale(4, 4);
+        my.score1.setColor("Red");
+        my.score1.visible = false;
+
+        my.score2 = this.add.text(100, 250, "filler");
+        my.score2.setScale(4, 4);
+        my.score2.setColor("Red");
+        my.score2.visible = false;
+
+        my.score3 = this.add.text(100, 300, "filler");
+        my.score3.setScale(4, 4);
+        my.score3.setColor("Red");
+        my.score3.visible = false;
+
+        my.score4 = this.add.text(100, 350, "filler");
+        my.score4.setScale(4, 4);
+        my.score4.setColor("Red");
+        my.score4.visible = false;
+
+        my.score5 = this.add.text(100, 400, "filler");
+        my.score5.setScale(4, 4);
+        my.score5.setColor("Red");
+        my.score5.visible = false;
+
+
+        
         
         
 
@@ -57,6 +93,13 @@ class ArrayBoom extends Phaser.Scene {
         my.sprite.enemy1 = this.add.sprite(game.config.width/2, 40, "enemy1");
         my.sprite.enemy1.setScale(2);
         my.sprite.enemy1.setAngle(180);
+
+        my.sprite.enemy2 = this.add.sprite(game.config.width/2, 40, "enemy2");
+        my.sprite.enemy2.setScale(2);
+        my.sprite.enemy2.setAngle(180);
+
+
+        
 
         // Notice that in this approach, we don't create any bullet sprites in create(),
         // and instead wait until we need them, based on the number of space bar presseads
@@ -88,7 +131,7 @@ class ArrayBoom extends Phaser.Scene {
         this.bulletSpeed = 20;
 
         // update HTML description
-        document.getElementById('description').innerHTML = '<h2>Array Boom.js</h2><br>A: left // D: right // Space: fire/emit'
+        document.getElementById('description').innerHTML = '<h2>Array Boom.js</h2><br>A: left // D: right // Space: fire/emit // R: restart the level after death'
 
         this.enemy1_heading = true;
 
@@ -98,6 +141,17 @@ class ArrayBoom extends Phaser.Scene {
         this.enemy1bulletSpeed = 10;
         my.sprite.enemybullet1.visible = false;
         this.enemy1_bulletActive = false;
+
+        this.enemy2_heading = false;
+        my.sprite.enemybullet2 = this.add.sprite(-10, -10, "enemy_bullet");
+        my.sprite.enemybullet2.setAngle(180);
+        my.sprite.enemybullet2.setScale(2);
+        this.enemy2bulletSpeed = 10;
+        my.sprite.enemybullet1.visible = false;
+        this.enemy2_bulletActive = false;
+
+
+
 
 
 
@@ -155,7 +209,8 @@ class ArrayBoom extends Phaser.Scene {
 
                 // Save top 5 scores
                 const top5Scores = scoresArray.slice(0, 5);
-                localStorage.clear(); // Clearing all scores to save only top 5
+                localStorage.clear();
+                
                 for (let i = 0; i < top5Scores.length; i++) {
                     localStorage.setItem((i + 1).toString(), top5Scores[i]);
                 }
@@ -163,14 +218,14 @@ class ArrayBoom extends Phaser.Scene {
 
                 console.log(top5Scores);
 
-                // Display top 5 scores
-                for (let i = 0; i < 5; i++) {
-                    const score = scoresArray[i];
-                    const text3 = this.add.text(100, 100 + i * 30, `Score ${i + 1}: ${score}`, { fontFamily: 'Arial', fontSize: 24, color: '#ffffff' });
-                    // Adjust the position and style of the text as needed
+                const scoreTexts = [this.my.score1, this.my.score2, this.my.score3, this.my.score4, this.my.score5];
+
+                for(let i = 0; i<5; i++){
+                    scoreTexts[i].setText(top5Scores[i]);
+                    scoreTexts[i].visible = true;
                 }
 
-                
+                this.my.highscoreText.visible = true;
 
 
                 
@@ -240,6 +295,20 @@ class ArrayBoom extends Phaser.Scene {
             my.sprite.enemy1.x-=5;
         }
 
+        if(my.sprite.enemy2.x >= 750){
+            my.sprite.enemy2.y+=65;
+            my.sprite.enemy2.x-=8;
+            this.enemy2_heading = false;
+        }else if(my.sprite.enemy2.x <= 50){
+            my.sprite.enemy2.y+=65;
+            my.sprite.enemy2.x+=8;
+            this.enemy2_heading = true;
+        }else if(this.enemy2_heading == true){
+            my.sprite.enemy2.x+=8;
+        }else if(this.enemy2_heading == false){
+            my.sprite.enemy2.x-=8;
+        }
+
 
 
 
@@ -270,6 +339,7 @@ class ArrayBoom extends Phaser.Scene {
 
             
                 my.text2.visible = false;
+                
                 this.playerHealth = 100;
                 this.playerScore = 0;
                 my.text1.setText(this.playerScore);
@@ -279,15 +349,26 @@ class ArrayBoom extends Phaser.Scene {
                 this.enemy1_heading = true;
                 
 
-                my.sprite.healthicon4.visible = true;   
-                my.sprite.healthicon3.visible = true;
-                my.sprite.healthicon2.visible = true;
-                my.sprite.healthicon1.visible = true;
+
+                const healthIcon = [my.sprite.healthicon4, my.sprite.healthicon3, my.sprite.healthicon2, my.sprite.healthicon1];
+                
+                for(let i = 0; i < 4; i++){
+                    healthIcon[i].visible = true;
+                }
+
+                const scoreVisibility = [my.score1, my.score2, my.score3, my.score4, my.score5];
+                
+                for(let i = 0; i < 5; i++){
+                    scoreVisibility[i].visible = false;
+                }
+
+                my.highscoreText.visible = false;
 
 
                 my.sprite.player.x = game.config.width/2;
                 my.sprite.player.y = game.config.height - 40;
                 my.sprite.player.visible = true;
+
                 
             
             
