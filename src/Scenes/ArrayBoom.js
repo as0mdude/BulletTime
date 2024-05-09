@@ -17,8 +17,6 @@ class ArrayBoom extends Phaser.Scene {
 
         this.playerScore = 0;
 
-        
-        
     }
 
     preload() {
@@ -188,6 +186,11 @@ class ArrayBoom extends Phaser.Scene {
         let my = this.my;
 
         console.log(this.playerHealth);
+
+        if(my.sprite.enemy1.y > 600 || my.sprite.enemy2.y > 600){
+            this.playerHealth == 0;
+        }
+
         
         if (this.collides(my.sprite.player, my.sprite.enemybullet1) || this.collides(my.sprite.player, my.sprite.enemybullet21) || this.collides(my.sprite.player, my.sprite.enemybullet22) || this.collides(my.sprite.player, my.sprite.enemybullet23)){
             // Handle player-enemy bullet collision here
@@ -340,30 +343,30 @@ class ArrayBoom extends Phaser.Scene {
         
         if(my.sprite.enemy1.x >= 750){
             my.sprite.enemy1.y+=65;
-            my.sprite.enemy1.x-=5;
+            my.sprite.enemy1.x-=5+(0.10*this.playerScore);
             this.enemy1_heading = false;
         }else if(my.sprite.enemy1.x <= 50){
             my.sprite.enemy1.y+=65;
-            my.sprite.enemy1.x+=5;
+            my.sprite.enemy1.x+=5+(0.10*this.playerScore);
             this.enemy1_heading = true;
         }else if(this.enemy1_heading == true){
-            my.sprite.enemy1.x+=5;
+            my.sprite.enemy1.x+=5+(0.10*this.playerScore);
         }else if(this.enemy1_heading == false){
-            my.sprite.enemy1.x-=5;
+            my.sprite.enemy1.x-=5+(0.10*this.playerScore);
         }
 
         if(my.sprite.enemy2.x >= 750){
             my.sprite.enemy2.y+=65;
-            my.sprite.enemy2.x-=8;
+            my.sprite.enemy2.x-=8+(0.10*this.playerScore);
             this.enemy2_heading = false;
         }else if(my.sprite.enemy2.x <= 50){
             my.sprite.enemy2.y+=65;
-            my.sprite.enemy2.x+=8;
+            my.sprite.enemy2.x+=8+(0.10*this.playerScore);
             this.enemy2_heading = true;
         }else if(this.enemy2_heading == true){
-            my.sprite.enemy2.x+=8;
+            my.sprite.enemy2.x+=8+(0.10*this.playerScore);
         }else if(this.enemy2_heading == false){
-            my.sprite.enemy2.x-=8;
+            my.sprite.enemy2.x-=8+(0.10*this.playerScore);
         }
 
 
