@@ -143,11 +143,23 @@ class ArrayBoom extends Phaser.Scene {
         this.enemy1_bulletActive = false;
 
         this.enemy2_heading = false;
-        my.sprite.enemybullet2 = this.add.sprite(-10, -10, "enemy_bullet");
-        my.sprite.enemybullet2.setAngle(180);
-        my.sprite.enemybullet2.setScale(2);
+        my.sprite.enemybullet21 = this.add.sprite(-10, -10, "enemy_bullet");
+        my.sprite.enemybullet21.setAngle(130);
+        my.sprite.enemybullet21.setScale(2);
+
+        my.sprite.enemybullet22 = this.add.sprite(-10, -10, "enemy_bullet");
+        my.sprite.enemybullet22.setAngle(180);
+        my.sprite.enemybullet22.setScale(2);
+
+        my.sprite.enemybullet23 = this.add.sprite(-10, -10, "enemy_bullet");
+        my.sprite.enemybullet23.setAngle(230);
+        my.sprite.enemybullet23.setScale(2);
+
+
         this.enemy2bulletSpeed = 10;
-        my.sprite.enemybullet1.visible = false;
+        my.sprite.enemybullet21.visible = false;
+        my.sprite.enemybullet22.visible = false;
+        my.sprite.enemybullet23.visible = false;
         this.enemy2_bulletActive = false;
 
 
@@ -177,7 +189,7 @@ class ArrayBoom extends Phaser.Scene {
 
         console.log(this.playerHealth);
         
-        if (this.collides(my.sprite.player, my.sprite.enemybullet1)) {
+        if (this.collides(my.sprite.player, my.sprite.enemybullet1) || this.collides(my.sprite.player, my.sprite.enemybullet21) || this.collides(my.sprite.player, my.sprite.enemybullet22) || this.collides(my.sprite.player, my.sprite.enemybullet23)){
             // Handle player-enemy bullet collision here
             //this.enemyKilled++;
             //my.text1.setText(this.enemyKilled);
@@ -188,16 +200,22 @@ class ArrayBoom extends Phaser.Scene {
             my.sprite.enemybullet1.visible = false;
             this.enemy1_bulletActive = false;
 
+            my.sprite.enemybullet21.visible = false;
+            this.enemy21_bulletActive = false;
+
+            my.sprite.enemybullet22.visible = false;
+            this.enemy22_bulletActive = false;
+
+            my.sprite.enemybullet23.visible = false;
+            this.enemy23_bulletActive = false;
+
             if(this.playerHealth == 0){
                 my.sprite.player.visible = false;
                 this.puff = this.add.sprite(my.sprite.player.x, my.sprite.player.y, "fire1").setScale(4).play("puff");
-                
-
-
                     // Incrementing the key to store the next score
                 let key = localStorage.length + 1;
                 localStorage.setItem(key.toString(), this.playerScore);
-
+    
                 // Retrieve and sort scores
                 let scoresArray = [];
                 for (let i = 0; i < localStorage.length; i++) {
@@ -206,7 +224,7 @@ class ArrayBoom extends Phaser.Scene {
                     scoresArray.push(value);
                 }
                 scoresArray.sort((a, b) => b - a);
-
+    
                 // Save top 5 scores
                 const top5Scores = scoresArray.slice(0, 5);
                 localStorage.clear();
@@ -214,32 +232,23 @@ class ArrayBoom extends Phaser.Scene {
                 for (let i = 0; i < top5Scores.length; i++) {
                     localStorage.setItem((i + 1).toString(), top5Scores[i]);
                 }
-
-
                 console.log(top5Scores);
-
+    
                 const scoreTexts = [this.my.score1, this.my.score2, this.my.score3, this.my.score4, this.my.score5];
-
+    
                 for(let i = 0; i<5; i++){
                     scoreTexts[i].setText(top5Scores[i]);
                     scoreTexts[i].visible = true;
                 }
-
+    
                 this.my.highscoreText.visible = true;
-
-
-                
-
-
-
-
-
+    
                 this.my.text2.visible = true;
-                
-
             }
 
         }
+
+        
 
         if(this.playerHealth>=100){
             my.sprite.healthicon4.visible = true;
@@ -278,6 +287,54 @@ class ArrayBoom extends Phaser.Scene {
 
             }
         }
+
+        if (!this.enemy21_bulletActive && !this.enemy22_bulletActive) {
+            // Set the active flag to true
+            this.enemy21_bulletActive = true;
+            this.enemy22_bulletActive = true;
+            this.enemy23_bulletActive = true;
+            // Set the position of the bullet to be the location of the player
+            // Offset by the height of the sprite, so the "bullet" comes out of
+            // the top of the player avatar, not the middle.
+            my.sprite.enemybullet21.x = my.sprite.enemy2.x;
+            my.sprite.enemybullet21.y = my.sprite.enemy2.y - my.sprite.enemy2.displayHeight/2;
+            my.sprite.enemybullet21.visible = true;
+
+            my.sprite.enemybullet22.x = my.sprite.enemy2.x;
+            my.sprite.enemybullet22.y = my.sprite.enemy2.y - my.sprite.enemy2.displayHeight/2;
+            my.sprite.enemybullet22.visible = true;
+
+            my.sprite.enemybullet23.x = my.sprite.enemy2.x;
+            my.sprite.enemybullet23.y = my.sprite.enemy2.y - my.sprite.enemy2.displayHeight/2;
+            my.sprite.enemybullet23.visible = true;
+        }
+
+        if (this.enemy21_bulletActive && this.enemy22_bulletActive) {
+            my.sprite.enemybullet21.y += this.enemy2bulletSpeed;
+            my.sprite.enemybullet21.x += this.enemy2bulletSpeed;
+
+            my.sprite.enemybullet23.y += this.enemy2bulletSpeed;
+            my.sprite.enemybullet23.x -= this.enemy2bulletSpeed;
+
+
+            my.sprite.enemybullet22.y += this.enemy2bulletSpeed;
+            
+            // Is the bullet off the top of the screen?
+            if (my.sprite.enemybullet21.y > 600) {
+                // make it inactive and invisible
+                this.enemy21_bulletActive = false;
+                my.sprite.enemybullet21.visible = false;
+
+                this.enemy22_bulletActive = false;
+                my.sprite.enemybullet22.visible = false;
+
+                this.enemy23_bulletActive = false;
+                my.sprite.enemybullet23.visible = false;
+            }
+        }
+
+
+        
 
 
         
@@ -330,13 +387,6 @@ class ArrayBoom extends Phaser.Scene {
 
         
         if (Phaser.Input.Keyboard.JustDown(this.restart) && this.playerHealth <= 0) {
-
-
-                
-
-                
-
-
             
                 my.text2.visible = false;
                 
@@ -419,6 +469,25 @@ class ArrayBoom extends Phaser.Scene {
                     this.my.sprite.enemy1.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
                     this.my.sprite.enemy1.y= 40;
                     this.enemy1_heading = true;
+                    
+                }, this);
+
+            }
+
+            if (this.collides(my.sprite.enemy2, bullet)) {
+                // start animation
+                this.puff = this.add.sprite(my.sprite.enemy2.x, my.sprite.enemy2.y, "fire1").setScale(4).play("puff");
+                // clear out bullet -- put y offscreen, will get reaped next update
+                bullet.y = -100;
+                my.sprite.enemy2.visible = false;
+                my.sprite.enemy2.x = -100;
+                this.playerScore = this.playerScore+=3;
+                my.text1.setText(this.playerScore);
+                this.puff.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+                    this.my.sprite.enemy2.visible = true;
+                    this.my.sprite.enemy2.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
+                    this.my.sprite.enemy2.y= 40;
+                    this.enemy2_heading = true;
                     
                 }, this);
 
