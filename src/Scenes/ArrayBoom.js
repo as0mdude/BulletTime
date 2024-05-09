@@ -11,7 +11,7 @@ class ArrayBoom extends Phaser.Scene {
         // The bullet property has a value which is an array.
         // This array will hold bindings (pointers) to bullet sprites
         this.my.sprite.bullet = [];   
-        this.maxBullets = 10;           // Don't create more than this many bullets
+        this.maxBullets = 3;           // Don't create more than this many bullets
 
         
 
@@ -34,6 +34,12 @@ class ArrayBoom extends Phaser.Scene {
         this.load.image("fire5", "fire5.png");
 
         this.load.image("health", "health.png")
+
+        this.load.audio('laser',  "laserLarge_000.ogg");
+        this.load.audio('explosion',  "explosionCrunch_000.ogg");
+        this.load.audio('forcefield',  "forceField_004.ogg");
+
+        
     }
 
     create() {
@@ -81,6 +87,11 @@ class ArrayBoom extends Phaser.Scene {
         my.score5.visible = false;
 
 
+        my.laser = this.sound.add('laser');
+        my.explosion = this.sound.add('explosion');
+        my.forcefield = this.sound.add('forcefield');
+
+
         
         
         
@@ -88,11 +99,12 @@ class ArrayBoom extends Phaser.Scene {
         my.sprite.player = this.add.sprite(game.config.width/2, game.config.height - 40, "playerchr");
         my.sprite.player.setScale(2);
 
-        my.sprite.enemy1 = this.add.sprite(game.config.width/2, 40, "enemy1");
+        
+        my.sprite.enemy1 = this.add.sprite(Phaser.Math.Clamp(Math.random() * config.width, 50, 750), 40, "enemy1");
         my.sprite.enemy1.setScale(2);
         my.sprite.enemy1.setAngle(180);
 
-        my.sprite.enemy2 = this.add.sprite(game.config.width/2, 40, "enemy2");
+        my.sprite.enemy2 = this.add.sprite(Phaser.Math.Clamp(Math.random() * config.width, 50, 750), 40, "enemy2");
         my.sprite.enemy2.setScale(2);
         my.sprite.enemy2.setAngle(180);
 
@@ -125,11 +137,11 @@ class ArrayBoom extends Phaser.Scene {
         this.restart = this.input.keyboard.addKey("R");
 
         // Set movement speeds (in pixels/tick)
-        this.playerSpeed = 10;
+        this.playerSpeed = 7;
         this.bulletSpeed = 20;
 
         // update HTML description
-        document.getElementById('description').innerHTML = '<h2>Array Boom.js</h2><br>A: left // D: right // Space: fire/emit // R: restart the level after death'
+        document.getElementById('description').innerHTML = '<h2>SpeedShooter by Vincent Fu</h2><br>A: left // D: right // Space: fire/emit // R: restart the level after death'
 
         this.enemy1_heading = true;
 
@@ -154,7 +166,7 @@ class ArrayBoom extends Phaser.Scene {
         my.sprite.enemybullet23.setScale(2);
 
 
-        this.enemy2bulletSpeed = 10;
+        this.enemy2bulletSpeed = 7;
         my.sprite.enemybullet21.visible = false;
         my.sprite.enemybullet22.visible = false;
         my.sprite.enemybullet23.visible = false;
@@ -191,6 +203,24 @@ class ArrayBoom extends Phaser.Scene {
             this.playerHealth == 0;
         }
 
+        switch(true) {
+            case this.playerScore >= 200:
+                this.cameras.main.setBackgroundColor('#8F00FF');
+                break;
+            case this.playerScore >= 150:
+                this.cameras.main.setBackgroundColor('#FFA500');
+                break;
+            case this.playerScore >= 100:
+                this.cameras.main.setBackgroundColor('#FFFF00');
+                break;
+            case this.playerScore >= 50:
+                this.cameras.main.setBackgroundColor('#800080');
+                break;
+            default:
+                
+                break;
+        }
+
         
         if (this.collides(my.sprite.player, my.sprite.enemybullet1) || this.collides(my.sprite.player, my.sprite.enemybullet21) || this.collides(my.sprite.player, my.sprite.enemybullet22) || this.collides(my.sprite.player, my.sprite.enemybullet23)){
             // Handle player-enemy bullet collision here
@@ -198,6 +228,10 @@ class ArrayBoom extends Phaser.Scene {
             //my.text1.setText(this.enemyKilled);
 
             this.playerHealth -= 25;
+
+            if(this.playerHealth != 0){
+                my.forcefield.play();
+            }
             
             // Reset the enemybullet1
             my.sprite.enemybullet1.visible = false;
@@ -214,6 +248,8 @@ class ArrayBoom extends Phaser.Scene {
 
             if(this.playerHealth == 0){
                 my.sprite.player.visible = false;
+                my.explosion.play();
+
                 this.puff = this.add.sprite(my.sprite.player.x, my.sprite.player.y, "fire1").setScale(4).play("puff");
                     // Incrementing the key to store the next score
                 let key = localStorage.length + 1;
@@ -253,19 +289,27 @@ class ArrayBoom extends Phaser.Scene {
 
         
 
-        if(this.playerHealth>=100){
-            my.sprite.healthicon4.visible = true;
-            my.sprite.healthicon3.visible = true;
-            my.sprite.healthicon2.visible = true;
-            my.sprite.healthicon1.visible = true;
-        }else if(this.playerHealth>=75){
-            my.sprite.healthicon4.visible = false;
-        }else if(this.playerHealth>=50){
-            my.sprite.healthicon3.visible = false;
-        }else if(this.playerHealth>=25){
-            my.sprite.healthicon2.visible = false;
-        }else{
-            my.sprite.healthicon1.visible = false;            
+       
+
+        switch(true){
+            case this.playerHealth>=100:
+                my.sprite.healthicon4.visible = true;
+                my.sprite.healthicon3.visible = true;
+                my.sprite.healthicon2.visible = true;
+                my.sprite.healthicon1.visible = true;
+                break;
+            case this.playerHealth>=75:
+                my.sprite.healthicon4.visible = false;
+                break;
+            case this.playerHealth>=50:
+                my.sprite.healthicon3.visible = false;
+                break;
+            case this.playerHealth>=25:
+                my.sprite.healthicon2.visible = false;
+                break;
+            case this.playerHealth == 0:
+                my.sprite.healthicon1.visible = false;
+                break;
         }
         
 
@@ -343,16 +387,16 @@ class ArrayBoom extends Phaser.Scene {
         
         if(my.sprite.enemy1.x >= 750){
             my.sprite.enemy1.y+=65;
-            my.sprite.enemy1.x-=5+(0.10*this.playerScore);
+            my.sprite.enemy1.x-=9+(0.10*this.playerScore);
             this.enemy1_heading = false;
         }else if(my.sprite.enemy1.x <= 50){
             my.sprite.enemy1.y+=65;
-            my.sprite.enemy1.x+=5+(0.10*this.playerScore);
+            my.sprite.enemy1.x+=9+(0.10*this.playerScore);
             this.enemy1_heading = true;
         }else if(this.enemy1_heading == true){
-            my.sprite.enemy1.x+=5+(0.10*this.playerScore);
+            my.sprite.enemy1.x+=9+(0.10*this.playerScore);
         }else if(this.enemy1_heading == false){
-            my.sprite.enemy1.x-=5+(0.10*this.playerScore);
+            my.sprite.enemy1.x-=9+(0.10*this.playerScore);
         }
 
         if(my.sprite.enemy2.x >= 750){
@@ -400,6 +444,11 @@ class ArrayBoom extends Phaser.Scene {
                 this.my.sprite.enemy1.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
                 this.my.sprite.enemy1.y= 40;
                 this.enemy1_heading = true;
+
+                this.my.sprite.enemy2.visible = true;
+                this.my.sprite.enemy2.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
+                this.my.sprite.enemy2.y= 40;
+                this.enemy2_heading = true;
                 
 
 
@@ -422,6 +471,8 @@ class ArrayBoom extends Phaser.Scene {
                 my.sprite.player.y = game.config.height - 40;
                 my.sprite.player.visible = true;
 
+                this.cameras.main.setBackgroundColor('#87CEEB');
+
                 
             
             
@@ -431,6 +482,9 @@ class ArrayBoom extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.space)) {
             // Are we under our bullet quota?
             if (my.sprite.bullet.length < this.maxBullets) {
+                my.laser.play();
+
+
                 my.sprite.bullet.push(this.add.sprite(
                     my.sprite.player.x, my.sprite.player.y-(my.sprite.player.displayHeight/2), "bullet")
                 );
@@ -444,22 +498,13 @@ class ArrayBoom extends Phaser.Scene {
             bullet.y -= this.bulletSpeed;
         }
 
-        // Remove all of the bullets which are offscreen
-        // filter() goes through all of the elements of the array, and
-        // only returns those which **pass** the provided test (conditional)
-        // In this case, the condition is, is the y value of the bullet
-        // greater than zero minus half the display height of the bullet? 
-        // (i.e., is the bullet fully offscreen to the top?)
-        // We store the array returned from filter() back into the bullet
-        // array, overwriting it. 
-        // This does have the impact of re-creating the bullet array on every 
-        // update() call. 
         my.sprite.bullet = my.sprite.bullet.filter((bullet) => bullet.y > -(bullet.displayHeight/2));
 
         // Check for collision with the hippo
         for (let bullet of my.sprite.bullet) {
             if (this.collides(my.sprite.enemy1, bullet)) {
                 // start animation
+                my.explosion.play();
                 this.puff = this.add.sprite(my.sprite.enemy1.x, my.sprite.enemy1.y, "fire1").setScale(4).play("puff");
                 // clear out bullet -- put y offscreen, will get reaped next update
                 bullet.y = -100;
@@ -468,17 +513,22 @@ class ArrayBoom extends Phaser.Scene {
                 this.playerScore = this.playerScore+=2;
                 my.text1.setText(this.playerScore);
                 this.puff.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                    this.my.sprite.enemy1.visible = true;
-                    this.my.sprite.enemy1.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
-                    this.my.sprite.enemy1.y= 40;
-                    this.enemy1_heading = true;
-                    
+                    if(my.sprite.enemy1.visible == false && my.sprite.enemy2.visible == false){
+                        this.my.sprite.enemy1.visible = true;
+                        this.my.sprite.enemy1.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
+                        this.my.sprite.enemy1.y= 40;
+                        this.enemy1_heading = true;
+
+                        this.my.sprite.enemy2.visible = true;
+                        this.my.sprite.enemy2.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
+                        this.my.sprite.enemy2.y= 40;
+                        this.enemy2_heading = true;
+                    }
                 }, this);
 
-            }
-
-            if (this.collides(my.sprite.enemy2, bullet)) {
+            } else if (this.collides(my.sprite.enemy2, bullet)) {
                 // start animation
+                my.explosion.play();
                 this.puff = this.add.sprite(my.sprite.enemy2.x, my.sprite.enemy2.y, "fire1").setScale(4).play("puff");
                 // clear out bullet -- put y offscreen, will get reaped next update
                 bullet.y = -100;
@@ -487,10 +537,18 @@ class ArrayBoom extends Phaser.Scene {
                 this.playerScore = this.playerScore+=3;
                 my.text1.setText(this.playerScore);
                 this.puff.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-                    this.my.sprite.enemy2.visible = true;
-                    this.my.sprite.enemy2.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
-                    this.my.sprite.enemy2.y= 40;
-                    this.enemy2_heading = true;
+                    if(my.sprite.enemy1.visible == false && my.sprite.enemy2.visible == false){
+                        this.my.sprite.enemy1.visible = true;
+                        this.my.sprite.enemy1.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
+                        this.my.sprite.enemy1.y= 40;
+                        this.enemy1_heading = true;
+
+                        this.my.sprite.enemy2.visible = true;
+                        this.my.sprite.enemy2.x = Phaser.Math.Clamp(Math.random() * config.width, 50, 750);
+                        this.my.sprite.enemy2.y= 40;
+                        this.enemy2_heading = true;
+                    }
+                    
                     
                 }, this);
 
